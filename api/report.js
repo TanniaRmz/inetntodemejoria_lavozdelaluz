@@ -2,7 +2,7 @@
 // Requiere la librería axios: npm install axios
 const axios = require('axios');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
+const GITHUB_TOKEN = process.env.intentomejor_TOKEN; 
 const GITHUB_OWNER = 'TanniaRmZ'; // Tu usuario
 const GITHUB_REPO = 'lavozdelaluz_lumibot'; // Tu repositorio
 const REPORTS_PATH = 'reports'; // Carpeta para los JSON de reportes
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
                     },
                     {
                         headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Authorization': `token ${intentomejor_TOKEN}`,
                             'Content-Type': 'application/json'
                         }
                     }
@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
             },
             {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': `token ${intentomejor_TOKEN}`,
                     'Content-Type': 'application/json'
                 }
             }
