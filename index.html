@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumi-Bot | Alumbrado Público</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* --- ESTILOS CSS --- */
+        
+        /* === FONDO EXTERIOR (BODY) === */
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('Fondo animado.avif'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; 
+        }
+
+        /* === PANTALLA DE CARGA (SPLASH SCREEN) === */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #128c7e; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #splash-screen img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            animation: bounce 1s infinite alternate;
+        }
+        
+        #splash-screen h1 {
+            color: white;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        #splash-screen p {
+            color: #dcf8c6;
+            font-size: 1em;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.05);
+            }
+        }
+        
+        /* === CONTENEDOR DEL CHAT (CHAT CONTAINER) === */
+        .chat-container {
+            width: 100%;
+            max-width: 420px;
+            height: 80vh;
+            max-height: 700px;
+            background-color: #f7f7f7; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative; 
+            opacity: 0; 
+            transition: opacity 0.5s ease-in;
+        }
+
+        /* === ESTILOS DEL CHAT (RESTO) === */
+        .chat-header {
+            background-color: #128c7e;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-avatar {
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            overflow: hidden;
+        }
+
+        .header-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-info h3 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .header-info p {
+            margin: 0;
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        /* 🎨 FONDO DE CHAT: IMAGEN CON OPACIDAD PARA MEJOR LEGIBILIDAD */
+        .chat-body {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-image: url('Luminarias aguascalientes.jpeg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-color: rgba(229, 221, 213, 0.7); /* Color base claro con 70% de opacidad */
+            background-blend-mode: color; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+        }
+
+        .bot-message {
+            background-color: #ffffff; 
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .user-message {
+            background-color: #dcf8c6; 
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message-time {
+            display: block;
+            font-size: 0.65em;
+            color: #777;
+            text-align: right;
+            margin-top: 5px;
+            line-height: 1;
+        }
+        
+        .message-image-container {
+            max-width: 100%;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .message-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .chat-footer {
+            padding: 8px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-footer input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 20px;
+            font-size: 1em;
+            margin: 0 8px;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+        }
+
+        .chat-footer button {
+            background-color: #128c7e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 4px;
+            transition: background-color 0.3s;
+        }
+
+        .chat-footer button:hover {
+            background-color: #0e6c60;
+        }
+
+        #attach-button {
+            background-color: transparent;
+            color: #777;
+            width: 44px;
+            height: 44px;
+            margin-left: 4px;
+        }
+        
+        #attach-button:hover {
+            color: #555;
+            background-color: transparent;
+        }
+
+        #attach-button .material-icons {
+            transform: rotate(45deg); 
+        }
+
+        #report-button {
+            position: absolute;
+            top: 15px; 
+            right: 15px; 
+            background-color: #dc3545; 
+            color: white;
+            border: none;
+            border-radius: 8px; 
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+            z-index: 10; 
+        }
+
+        #report-button:hover {
+            background-color: #c82333; 
+        }
+
+        #report-button .material-icons {
+            font-size: 24px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <img src="Logo alumbrado publico cute.jpg" alt="Logo Lumi-Bot">
+        <h1>Lumi-Bot</h1>
+        <p>Iniciando servicio de alumbrado...</p>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        
+        <button id="report-button" onclick="startQuickReport()">
+            <span class="material-icons">lightbulb_outline</span> 
+        </button>
+
+        <div class="chat-header">
+            <div class="header-avatar">
+                <img src="Logo alumbrado publico cute.jpg" alt="Lumi-Bot Logo">
+            </div>
+            <div class="header-info">
+                <h3>Lumi-Bot</h3>
+                <p>Alumbrado Público | La voz de la luz</p>
+            </div>
+        </div>
+
+        <div class="chat-body" id="chat-body">
+        </div>
+
+        <div class="chat-footer">
+            <button id="attach-button" onclick="document.getElementById('file-input').click();">
+                <span class="material-icons">attach_file</span>
+            </button>
+
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+
+            <input type="text" id="user-input" placeholder="Escribe..." onkeypress="handleKeyPress(event)">
+
+            <button onclick="sendMessage()">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA JAVASCRIPT ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatBody = document.getElementById('chat-body');
+        const userInput = document.getElementById('user-input');
+        const fileInput = document.getElementById('file-input');
+        const splashScreen = document.getElementById('splash-screen');
+        // Claves de almacenamiento local
+        const CHAT_STORAGE_KEY = 'lumi-bot-conversation';
+        const FOLIO_COUNTER_KEY = 'lumi-bot-folio-counter';
+        
+        const DEFAULT_RESPONSE = "Lo siento, esa pregunta es nueva para mí. Intenta con **'hola'**, **'reportar'** o **'horario'** para guiarte.";
+
+        // Estado: Almacena temporalmente la ubicación para el reporte
+        let currentReportLocation = null;
+        
+        // Estado: Indica si el bot está esperando el folio o la dirección del usuario
+        let waitingForFolio = false;
+
+        const DETAILED_STATUS_MESSAGE = "Estamos dándole seguimiento a todas las solicitudes. Actualmente, tu reporte se encuentra en estado de **Verificación en Campo** o **Reparación Activa**.\n\nRecuerda que si ves una 'X' con cinta negra en la base, significa que fue **diagnosticada** y está en la lista de reparaciones prioritarias. ¡El tiempo de atención es de 24 a 72 horas hábiles!";
+
+        // --- OBJETO DE RESPUESTAS PERSONALIZADAS ---
+        const RESPUESTAS = {
+            "hola": {
+                "variantes": ["hola", "holaaaa", "olis", "oli", "ola", "wenas", "buenos días", "buenas tardes"],
+                "respuesta": "¡Hola! Soy **Lumi-Bot**, tu asistente para Alumbrado Público. ¿En qué puedo ayudarte hoy?"
+            },
+            "quién eres": {
+                "variantes": ["quién eres", "quien eres", "qué eres", "que eres"],
+                "respuesta": "Soy un Chat-Bot diseñado para darte información y ayudarte a gestionar reportes del área de Alumbrado Público. **¡Mi misión es que tu calle brille!**"
+            },
+            "qué haces": {
+                "variantes": ["qué haces", "que haces", "a qué te dedicas"],
+                "respuesta": "Puedo responder dudas sobre reportes, servicios y horarios. Si quieres reportar una falla puedes escribir **'Reportar'** o si quieres saber del estado de tu reporte escribe **'Seguimiento'**."
+            },
+            "reportar": {
+                "variantes": ["cómo reporto una falla", "como reporto una falla", "quiero reportar una falla", "reportar", "reporte rapido"],
+                "respuesta": "¡Entendido! Vamos a generar un **Reporte Rápido**. Primero, necesito tu ubicación. El sistema ha solicitado permiso para usar tu GPS. Por favor, **acepta la solicitud de ubicación** que aparece en tu navegador.\n\nSi ya lo hiciste, por favor, envía un mensaje con la **Dirección exacta Y LA DESCRIPCIÓN DE LA FALLA SEPARADA POR UNA COMA** (ej: calle X, luminaria parpadea). Puedes adjuntar una **foto** (opcional)."
+            },
+            "horario": {
+                "variantes": ["cuál es tu horario", "cual es tu horario", "horario de atención", "horario", "cual es el horario de alumbrado publico", "cual es el horario"],
+                "respuesta": "El horario de atención de Alumbardo Publico es de **Lunes a Domingo** y circulamos las **24 horas**."
+            },
+            "estado de reporte": {
+                "variantes": ["reportes", "quiero saber de mi reporte", "seguimiento", "estado de mi reporte"],
+                "respuesta": "INICIAR SEGUIMIENTO: <br>Perfecto, voy a buscar tu reporte. Por favor, indícame tu **número de folio** o la **dirección exacta** que reportaste."
+            },
+            "gracias": { "variantes": ["gracias", "muchas gracias"], "respuesta": "¡De nada! Es un placer iluminar tu camino. " },
+            "numero": { "variantes": ["numero", "cual es el numero"], "respuesta": "El número oficial para reportes es el **072**. ¡Guárdalo! O si tienes problemas puedes llamar también a este número **449 910 1019**." },
+            
+            "link": {
+                "variantes": ["link", "enlace", "formulario", "pagina web", "reporte detallado"],
+                "respuesta": "Si quieres hacer un reporte más detallado entra al siguiente enlace: \n** https://jonemoto24.github.io/Alumbrado-publico-de-Aguascalientes/ **\nEste link te facilitará más la gestión de reportes."
+            },
+            "lamparas nuevas": {
+                "variantes": ["lamparas nuevas", "nuevas lamparas", "instalacion", "cambio de luz"],
+                "respuesta": "Constantemente estamos actualizando la infraestructura. Para solicitar la **instalación de nuevas luminarias** o un **cambio de tecnología**, es necesario comunicarte al **072** para evaluar la viabilidad del proyecto en tu zona."
+            },
+            "significado de alumbrado publico": {
+                "variantes": ["significado de alumbrado publico", "que es alumbrado publico", "que significa alumbrado", "definicion"],
+                "respuesta": "El **Alumbrado Público** es el servicio que busca iluminar las vías de circulación y los espacios públicos. Su propósito es proporcionar **seguridad**, **visibilidad** y **mejorar la calidad de vida** de los ciudadanos durante la noche."
+            },
+            "lampara caida": {
+                "variantes": ["lampara caida", "poste caido", "luminaria tirada", "columna rota", "peligro"],
+                "respuesta": "🚨 **¡ATENCIÓN, PELIGRO!** Si una lámpara, poste o luminaria está caída, representa un riesgo eléctrico y físico. Por favor, llama inmediatamente al número de **Emergencias (911)** y notifica también al **072** para que sea atendida con máxima prioridad."
+            },
+            "fotoceldas": {
+                "variantes": ["fotoceldas", "foto celda", "porque se prende de dia", "se prende de dia"],
+                "respuesta": "Las luminarias son controladas por **fotoceldas**, que son sensores de luz. Si una lámpara enciende de día, la fotocelda probablemente está fallando. Este es un reporte común; por favor, usa **'Reportar'** para indicarnos la dirección y corregir el problema."
+            },
+            "colores de las lamparas": {
+                "variantes": ["colores de las lamparas", "luz amarilla", "luz blanca", "tipo de lampara"],
+                "respuesta": "En Aguascalientes usamos principalmente tecnología **LED (luz blanca/fría)** por su eficiencia energética. Anteriormente se usaba **Vapor de Sodio (luz amarilla)**. Si detectas un cambio de color abrupto o intermitente, podría ser señal de una falla que requiere reparación."
+            }
+        };
+
+        // --- FUNCIONES DE UTILIDAD ---
+        
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function saveConversation() {
+            // Guarda la conversación (actualmente desactivado)
+        }
+        
+        function getNextFolio() {
+            let folio = parseInt(localStorage.getItem(FOLIO_COUNTER_KEY) || '0', 10);
+            folio++;
+            localStorage.setItem(FOLIO_COUNTER_KEY, folio.toString());
+            // Formato F-001
+            return `F-${String(folio).padStart(3, '0')}`; 
+        }
+
+        function appendMessage(text, sender, imageURL = null) {
+            const time = getCurrentTime();
+            const messageDiv = document.createElement('div');
+            // Reemplaza \n (saltos de línea) por <br> y da formato a negritas
+            const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            messageDiv.classList.add('message-bubble', sender === 'bot' ? 'bot-message' : 'user-message');
+
+            let contentHTML = '';
+
+            if (imageURL) {
+                contentHTML += `
+                    <div class="message-image-container">
+                        <img src="${imageURL}" alt="Imagen adjunta" class="message-image">
+                    </div>
+                `;
+            }
+
+            contentHTML += `<span>${formattedText}</span>`;
+            contentHTML += `<span class="message-time">${time}</span>`;
+
+            messageDiv.innerHTML = contentHTML;
+            chatBody.appendChild(messageDiv);
+
+            chatBody.scrollTop = chatBody.scrollHeight;
+            saveConversation();
+        }
+
+        function getBotResponse(userText) {
+            const lowerCaseText = userText.toLowerCase().trim();
+
+            if (waitingForFolio) {
+                if (lowerCaseText.length > 2) { 
+                    waitingForFolio = false; 
+                    return DETAILED_STATUS_MESSAGE; 
+                }
+            }
+            
+            for (const key in RESPUESTAS) {
+                const item = RESPUESTAS[key];
+                for (const variant of item.variantes) {
+                    if (lowerCaseText.includes(variant.toLowerCase())) {
+                        if (key === "estado de reporte") {
+                            waitingForFolio = true;
+                        }
+                        return item.respuesta;
+                    }
+                }
+            }
+            return DEFAULT_RESPONSE;
+        }
+
+        function processUserMessage(userText) {
+            const botResponse = getBotResponse(userText);
+            
+            if (botResponse.startsWith("INICIAR SEGUIMIENTO:")) {
+                const displayResponse = botResponse.substring("INICIAR SEGUIMIENTO:".length).trim();
+                setTimeout(() => {
+                    appendMessage(displayResponse, 'bot');
+                }, 800);
+            } else {
+                setTimeout(() => {
+                    appendMessage(botResponse, 'bot');
+                }, 800);
+            }
+        }
+        
+        // =========================================================================================
+        // 💾 FUNCIÓN DE ENVÍO DE REPORTE A API DE VERCEL (PARA GUARDAR EN GITHUB)
+        // =========================================================================================
+
+        // URL CORREGIDA: Usando tu dominio conocido
+        const API_URL = 'https://lavozdelaluz-lumibot.vercel.app/api/report'; 
+
+        function sendReportToBackend(reportData) {
+            console.log("Enviando reporte al servidor:", reportData);
+            
+            appendMessage(`⌛ Procesando reporte... Guardando datos en el sistema.`, 'bot');
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) { 
+                    const reportSummary = `
+                        **✅ REPORTE GENERADO CON ÉXITO**
+                        **Folio:** ${reportData.folio}
+                        **Dirección:** ${reportData.direccion}
+                        **Falla de la Luminaria:** ${reportData.descripcion_falla}        
+                        Tu reporte ha sido registrado y está en manos de la oficina. Conserva el **Folio ${reportData.folio}** para dar seguimiento.
+                    `;
+                    appendMessage(reportSummary, 'bot');
+                } else {
+                    appendMessage(`⚠️ **Fallo en el Sistema de Registro (Folio ${reportData.folio}):** El servidor respondió con un error interno. Intenta más tarde o llama al 072.`, 'bot');
+                }
+            })
+            .catch(error => {
+                console.error('Error de fetch o de la API:', error);
+                appendMessage(`❌ **Error de red o del servidor (Folio ${reportData.folio}):** No se pudo contactar al sistema. Si tu reporte se guardó, espera el resumen. De lo contrario, llama al 072.`, 'bot');
+            });
+        }
+
+        // --- LÓGICA DE ENVÍO Y REPORTE (MODIFICADA PARA IMAGEN BASE64) ---
+
+        function sendMessage() {
+            const userText = userInput.value.trim();
+            const file = fileInput.files[0];
+            let imagePreviewURL = null; 
+            let imageBase64Data = null; 
+            let imageFileName = null; 
+
+            if (!userText && !file) {
+                return;
+            }
+
+            const processMessage = () => {
+                const messageToSend = userText || '[Imagen de Reporte Adjunta]';
+                appendMessage(messageToSend, 'user', imagePreviewURL);
+
+                if (userText || file) {
+                    const textToProcess = userText || "quiero reportar una falla";
+
+                    if (currentReportLocation !== undefined && currentReportLocation !== null) {
+                        
+                        const folio = getNextFolio();
+                        const textoCompleto = userText.trim();
+                        let direccion = textoCompleto;
+                        let descripcionFalla = "Falla sin describir o el texto no siguió el formato: Dirección, Falla.";
+                        
+                        const firstCommaIndex = textoCompleto.indexOf(',');
+
+                        if (firstCommaIndex !== -1) {
+                            direccion = textoCompleto.substring(0, firstCommaIndex).trim();
+                            descripcionFalla = textoCompleto.substring(firstCommaIndex + 1).trim();
+                        } 
+
+                        const gpsString = currentReportLocation.latitude ? 
+                            `${currentReportLocation.latitude.toFixed(6)}, ${currentReportLocation.longitude.toFixed(6)}` : 'No obtenida / Permiso rechazado';
+
+                        const reportData = {
+                            folio: folio,
+                            fecha: new Date().toLocaleString(),
+                            direccion: direccion,
+                            descripcion_falla: descripcionFalla,
+                            ubicacionGPS: gpsString,
+                            // ENVIAMOS LA IMAGEN CODIFICADA Y SU NOMBRE AL BACKEND
+                            imagenBase64: imageBase64Data, 
+                            imagenNombre: imageFileName,   
+                            estado: 'Reportado'
+                        };
+
+                        sendReportToBackend(reportData); 
+
+                        currentReportLocation = undefined;
+                        fileInput.value = ''; 
+
+                    } else {
+                        processUserMessage(textToProcess);
+                    }
+                }
+
+                userInput.value = '';
+                fileInput.value = '';
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Extrae solo la cadena Base64
+                    imageBase64Data = e.target.result.split(',')[1]; 
+                    imageFileName = file.name;
+                    imagePreviewURL = URL.createObjectURL(file); 
+                    processMessage();
+                };
+                reader.onerror = function(error) {
+                    console.error("Error al leer el archivo:", error);
+                    appendMessage("⚠️ Error al cargar la imagen. Intenta de nuevo.", 'bot');
+                    processMessage(); 
+                };
+                reader.readAsDataURL(file); // Lee el archivo como Base64
+            } else {
+                processMessage();
+            }
+        }
+
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // --- LÓGICA DE GEOLOCALIZACIÓN Y REPORTE RÁPIDO ---
+        
+        function requestLocation() {
+            currentReportLocation = null; 
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentReportLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        
+                        const mapLink = `https://www.google.com/maps/search/?api=1&query=${currentReportLocation.latitude},${currentReportLocation.longitude}`;
+                        
+                        appendMessage(`✅ **Ubicación GPS Obtenida:** Lat: ${currentReportLocation.latitude.toFixed(5)}, Long: ${currentReportLocation.longitude.toFixed(5)}.<br>([Ver en Mapa](${mapLink}))`, 'bot');
+                        
+                        appendMessage(`Ahora, por favor, escribe la **dirección exacta SEGUIDA DE UNA COMA y la falla** (ej: **Calle 5, la luminaria está apagada**).`, 'bot');
+                        
+                    },
+                    (error) => {
+                        let errorMessage = 'No fue posible obtener tu ubicación GPS.';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMessage += '<br>Necesitas aceptar el permiso de ubicación.';
+                        } else {
+                            errorMessage += `<br>Error: ${error.message}`;
+                        }
+                        appendMessage(`⚠️ **Alerta:** ${errorMessage}<br>Por favor, proporciona la dirección exacta y la descripción de la falla manualmente, usando el formato **Dirección, Falla** para continuar.`, 'bot');
+                        currentReportLocation = { latitude: null, longitude: null }; 
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            } else {
+                appendMessage("⚠️ **Error:** Tu navegador no soporta la geolocalización. Por favor, proporciona la dirección exacta y la descripción de la falla manualmente, usando el formato **Dirección, Falla**.", 'bot');
+                currentReportLocation = { latitude: null, longitude: null };
+            }
+        }
+
+        function startQuickReport() {
+             const reportMessage = RESPUESTAS["reportar"].respuesta;
+             appendMessage(reportMessage, 'bot');
+             requestLocation();
+        }
+
+        function sendBotInitialMessage() {
+            const welcomeMessage = RESPUESTAS["hola"].respuesta + 
+                "<br><br>¿Te gustaría hacer un **Reporte Rápido**? Puedes usar el botón rojo 💡 de arriba, o escribir **'Reportar'** o ¿Tienes una pregunta sobre **Horarios** o **Seguimiento**?";
+            appendMessage(welcomeMessage, 'bot');
+        }
+        
+        function loadConversation() {
+            localStorage.removeItem(CHAT_STORAGE_KEY);
+            chatBody.innerHTML = ''; 
+        }
+
+        function initializeApp() {
+            loadConversation(); 
+            const splashDuration = 2000; 
+
+            setTimeout(() => {
+                splashScreen.style.opacity = '0';
+                chatContainer.style.opacity = '1';
+                
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    sendBotInitialMessage();
+                }, 500);
+                
+            }, splashDuration);
+        }
+        
+        window.onload = initializeApp;
+
+    </script>
+</body>
+</html>
