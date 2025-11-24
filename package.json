@@ -1,0 +1,12 @@
+{
+  "name": "lumi-bot-backend",
+  "version": "1.0.0",
+  "description": "Backend para el chatbot Lumi-Bot en Vercel",
+  "main": "api/report.js",
+  "scripts": {
+    "start": "echo 'Run locally using Vercel CLI or deploy'"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
